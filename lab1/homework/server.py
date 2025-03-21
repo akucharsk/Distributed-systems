@@ -2,6 +2,7 @@ import socket
 import sys
 import threading
 from message import Message
+import signal
 
 
 class Server:
@@ -11,13 +12,14 @@ class Server:
 
         self.client_sockets: list[socket.socket] = []
         self.client_thread_events: list[threading.Event] = []
+        self.free_threads = []
         self.first_free_thread = -1
         self.client_count = 0
 
     def create_new_client_thread(self, client):
         self.client_sockets.append(client)
         self.client_count += 1
-
+        print("Creating new thread")
         client_idx = len(self.client_sockets) - 1
         thread = threading.Thread(target=self.handle_client, args=(client_idx, ), daemon=True)
         self.client_thread_events.append(threading.Event())
@@ -25,19 +27,16 @@ class Server:
         thread.start()
 
     def add_client_to_thread(self, client):
+        self.first_free_thread = self.free_threads.pop()
         self.client_sockets[self.first_free_thread] = client
         self.client_count += 1
         self.client_thread_events[self.first_free_thread].set()
         free_idx = self.first_free_thread
         self.first_free_thread = -1
-        for i in range(free_idx + 1, self.client_count):
-            if self.client_thread_events[i].is_set():
-                self.first_free_thread = i
-                break
 
     def accept(self):
         client, addr = self.socket.accept()
-        if self.first_free_thread == -1:
+        if not self.free_threads:
             self.create_new_client_thread(client)
         else:
             self.add_client_to_thread(client)
@@ -53,6 +52,8 @@ class Server:
         msg = Message.exit_message(client_name).encode()
         self.broadcast(client_idx, msg)
         self.client_thread_events[client_idx].clear()
+        self.free_threads.append(client_idx)
+        self.client_count -= 1
 
     def enter_chat(self, client_idx, client_name):
         print(f"[{client_name}] is entering")
@@ -96,6 +97,7 @@ class Server:
 
 def main():
     tcp_socket = None
+    udp_socket = None
     try:
         tcp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         tcp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -118,6 +120,8 @@ def main():
         if tcp_socket is not None:
             print("Socket closing")
             tcp_socket.close()
+        if udp_socket is not None:
+            print("Socket closing")
 
 
 if __name__ == '__main__':
