@@ -14,10 +14,21 @@ async function submit () {
         body: JSON.stringify(batch)
     });
 
-
     const data = await resp.json();
-    const id = data["id"];
+    console.log(resp.status)
+    if (resp.status >= 400) {
+        const errors = "".concat(...data.map(elem => `${elem.query}: ${elem.message}\n`))
+        alert(`ERROR:\n${errors}`);
+        return;
+    }
+    window.location.href = `/result/${data.id}`
+}
 
-    window.location.href = `/result/${id}`;
-
+async function getRawJSON() {
+    const path = window.location.pathname.split("/");
+    console.log(path)
+    const id = path[path.length - 1];
+    if (id === undefined)
+        return
+    window.location.href = `/result/json/${id}`;
 }

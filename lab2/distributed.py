@@ -97,6 +97,7 @@ from fastapi.responses import JSONResponse
 
 items = {"foo": {"name": "Fighters", "size": 6}, "bar": {"name": "Tenders", "size": 3}}
 
+
 @app.put("/v7/items/{item_id}")
 async def upsert_item(
     item_id: str,

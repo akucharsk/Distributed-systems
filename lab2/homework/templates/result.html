@@ -5,7 +5,55 @@
     <title>Result</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-{{state}}
+<body class="h-screen">
+    <div class="flex-col justify-center items-center">
+        <div class="h-1/12 w-full my-5 text-center font-bold text-3xl items-center content-center">
+            Search results (sorted by distance)
+        </div>
+        <div class="flex justify-center items-center content-center">
+            <button
+                    class="text-center text-xl bg-red-500 outline outline-red-800 text-white mx-auto my-[1%] p-2"
+                    onclick="getRawJSON()"
+            >
+                Raw JSON
+            </button>
+        </div>
+    </div>
+    <div class="h-5/6 w-full my-auto gap-10">
+        {% for location in state -%}
+            <div class="bg-gray-200 m-3 gap-5 flex-col">
+                <div class="text-center mx-auto px-5 py-2 text-lg font-bold">
+                    Queried IP address: {{ location.query }}
+                </div>
+                <div class="text-center mx-auto px-5 py-2">
+                    {{ location.city }}, {{ location.country }}
+                </div>
+                <div class="bg-green-50 p-3 text-center rounded-lg">
+                    {{ location.org }}
+                </div>
+                <div class="bg-indigo-50 p-3 items-center content-center justify-center flex">
+                    <div class="bg-indigo-100 flex w-fit items-center rounded-xl">
+                        <div class="bg-indigo-200 p-2 text-center rounded-lg text-large font-bold w-fit h-fit m-3">
+                            {{ location.distance }}km from your location
+                        </div>
+                        <div class="bg-gray-50 m-2 p-2 w-fit rounded-2xl">
+                            <div class="text-center items-center content-center justify-center">
+                                {{ location.lat }}
+                            </div>
+                            <div class="text-center items-center content-center justify-center">
+                                {{ location.lon }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex gap-5 py-5 h-1/3 w-full object-contain justify-center">
+                    {% for image in location.images -%}
+                        <img src="{{ image }}"  alt="" class="w-1/6 h-auto object-contain"/>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 </body>
+<script src="/static/js/index.js"></script>
 </html>
